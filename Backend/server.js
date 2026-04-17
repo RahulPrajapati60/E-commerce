@@ -16,11 +16,14 @@ app.use(cors({
     credentials: true
 }))
 // Routes
+app.get('/', (req, res) => {
+    res.json({ message: 'E-commerce Backend is running 🚀' });
+});
 app.use('/api/v1/users', userRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/products", productRoutes);
 
-console.log("✅ Product routes mounted at /api/v1/products");
+console.log(" Product routes mounted at /api/v1/products");
 
 app.use((req, res) => {
     console.log("❌ Route not found:", req.method, req.originalUrl);
