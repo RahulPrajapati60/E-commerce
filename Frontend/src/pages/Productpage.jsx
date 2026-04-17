@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { productAPI } from "../api/product";
+import { productAPI } from "../src/api/Product.js";
 import { useAuth } from "../context/AuthContext";
 
 const fmt = (n) => "₹" + Number(n).toLocaleString("en-IN");
