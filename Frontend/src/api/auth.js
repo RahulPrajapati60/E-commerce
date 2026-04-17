@@ -1,11 +1,13 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL 
-  ? `${process.env.REACT_APP_API_URL}/api/v1` 
+// src/api/config.js
+
+const API_BASE_URL = process.env.REACT_APP_API_URL
+  ? `${process.env.REACT_APP_API_URL}/api/v1`
   : "http://localhost:8000/api/v1";
 
-const BASE = `${API_BASE_URL}/users`;
+console.log("🚀 API Base URL:", API_BASE_URL);   // Helpful for debugging
 
-const req = async (method, path, body, token) => {
-  const opts = {
+const req = async (method, endpoint, body = null, token = null) => {
+  const options = {
     method,
     headers: {
       "Content-Type": "application/json",
@@ -14,25 +16,48 @@ const req = async (method, path, body, token) => {
     ...(body && { body: JSON.stringify(body) }),
   };
 
-  const res = await fetch(`${BASE}${path}`, opts);
-  const data = await res.json();
+  try {
+    const response = await fetch(endpoint, options);
+    const data = await response.json();
 
-  console.log("API RESPONSE:", data);   // ← Yeh development ke liye theek hai
+    console.log(`📡 [${method}] ${endpoint} →`, data);
 
-  if (!res.ok) throw new Error(data.message || "Something went wrong");
-  return data;
+    if (!response.ok) {
+      throw new Error(data.message || data.error || "Something went wrong");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("❌ API Error:", error.message);
+    throw error;
+  }
 };
 
-export const authAPI = {
-  register: (body) => req("POST", "/register", body),
-  login: (body) => req("POST", "/login", body),
-  logout: (token) => req("POST", "/logout", null, token),
-  reVerify: (body) => req("POST", "/reverify", body),
-  forgotPassword: (body) => req("POST", "/forgot-password", body),
+// Base URLs
+const USER_BASE = `${API_BASE_URL}/users`;
+const PRODUCT_BASE = `${API_BASE_URL}/products`;
 
-  verifyOTP: (body) => req("POST", "/verify-otp", body),
-  
-  changePassword: (email, body) => req("POST", `/change-password/${email}`, body),
-  getAllUsers: (token) => req("GET", "/all-user", null, token),
-  getUserById: (userId) => req("GET", `/get-user/${userId}`),
+export const authAPI = {
+  register: (body) => req("POST", `${USER_BASE}/register`, body),
+  login: (body) => req("POST", `${USER_BASE}/login`, body),
+  logout: (token) => req("POST", `${USER_BASE}/logout`, null, token),
+  reVerify: (body) => req("POST", `${USER_BASE}/reverify`, body),
+  forgotPassword: (body) => req("POST", `${USER_BASE}/forgot-password`, body),
+  verifyOTP: (body) => req("POST", `${USER_BASE}/verify-otp`, body),
+  changePassword: (email, body) => req("POST", `${USER_BASE}/change-password/${email}`, body),
+  getAllUsers: (token) => req("GET", `${USER_BASE}/all-user`, null, token),
+  getUserById: (userId, token) => req("GET", `${USER_BASE}/get-user/${userId}`, null, token),
+};
+
+// Products API
+export const productAPI = {
+  getAll: (params = "?sort=newest&page=1&limit=12") =>
+    req("GET", `${PRODUCT_BASE}${params}`),
+
+  getById: (id) => req("GET", `${PRODUCT_BASE}/${id}`),
+
+  // Add more as needed
+  create: (body, token) => req("POST", PRODUCT_BASE, body, token),
+  update: (id, body, token) => req("PUT", `${PRODUCT_BASE}/${id}`, body, token),
+  delete: (id, token) => req("DELETE", `${PRODUCT_BASE}/${id}`, null, token),
 };
