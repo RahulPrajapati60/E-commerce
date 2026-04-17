@@ -1,43 +1,68 @@
-import axios from "axios"; 
+import axios from "axios";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL 
-  ? `${process.env.REACT_APP_API_URL}/api/v1` 
+const API_BASE_URL = process.env.REACT_APP_API_URL
+  ? `${process.env.REACT_APP_API_URL}/api/v1`
   : "http://localhost:8000/api/v1";
 
-const BASE = `${API_BASE_URL}/orders`;  
+const ORDER_BASE = `${API_BASE_URL}/orders`;
 
-const req = async (method, path, body, token) => {
-  const opts = {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
-    ...(body && { body: JSON.stringify(body) }),
-  };
+console.log("🚀 Order API Base:", ORDER_BASE);
 
-  const res = await fetch(`${BASE}${path}`, opts);   
-  const data = await res.json();
+// Axios Instance
+const api = axios.create({
+  baseURL: ORDER_BASE,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-  if (!res.ok) throw new Error(data.message || "Something went wrong");
-  return data;
-};
+// Auto attach token (Recommended)
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token"); // Change if you use different storage
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export const orderAPI = {
-  placeOrder: (body, token) => req("POST", "/place", body, token),
+  // User APIs
+  placeOrder: async (body, token) => {
+    const res = await api.post("/place", body, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    return res.data;
+  },
 
-  getMyOrders: (token) => req("GET", "/my-orders", null, token),
+  getMyOrders: async (token) => {
+    const res = await api.get("/my-orders");
+    return res.data;
+  },
 
-  getOrderById: (orderId, token) => req("GET", `/${orderId}`, null, token),
+  getOrderById: async (orderId, token) => {
+    const res = await api.get(`/${orderId}`);
+    return res.data;
+  },
 
-  cancelOrder: (orderId, token) => req("PATCH", `/${orderId}/cancel`, null, token),
+  cancelOrder: async (orderId, token) => {
+    const res = await api.patch(`/${orderId}/cancel`);
+    return res.data;
+  },
 
-  // Admin only
-  getAllOrders: (token, params = "") => 
-    req("GET", `/admin/all${params ? `?${params}` : ""}`, null, token),
+  // Admin APIs
+  getAllOrders: async (params = "", token) => {
+    const query = params ? `?${params}` : "";
+    const res = await api.get(`/admin/all${query}`);
+    return res.data;
+  },
 
-  getStats: (token) => req("GET", "/admin/stats", null, token),
+  getStats: async (token) => {
+    const res = await api.get("/admin/stats");
+    return res.data;
+  },
 
-  updateOrderStatus: (orderId, body, token) => 
-    req("PATCH", `/admin/${orderId}/status`, body, token),
+  updateOrderStatus: async (orderId, body, token) => {
+    const res = await api.patch(`/admin/${orderId}/status`, body);
+    return res.data;
+  },
 };
