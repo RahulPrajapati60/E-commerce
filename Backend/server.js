@@ -1,42 +1,50 @@
 import express from 'express';
-import 'dotenv/config'
+import 'dotenv/config';
 import ConnectDb from './Database/db.js';
-import userRoutes from './routes/userRoutes.js'
-import orderRoutes from "./routes/orderRoutes.js";
-import productRoutes from "./routes/ProductRoutes.js";
-import cors from 'cors'
+import userRoutes from './routes/userRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import productRoutes from './routes/ProductRoutes.js';
+import cors from 'cors';
 
-const app = express()
-const PORT = process.env.PORT || 8000
+const app = express();
+const PORT = process.env.PORT || 8000;
 
-//middewere
-app.use(express.json())
+app.use(express.json());
+
+// ✅ Best CORS for Production + Development
 app.use(cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
-    credentials: true
-}))
-// Routes
+    origin: [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://e-commerce-git-main-rahul-prajapatis-projects-f953a45a.vercel.app",
+        "https://e-commerce-4fe8q3odd-rahul-prajapatis-projects-f953a45a.vercel.app"
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+// Health Check
 app.get('/', (req, res) => {
-    res.json({ message: 'E-commerce Backend is running 🚀' });
-});
-app.use('/api/v1/users', userRoutes);
-app.use("/api/v1/orders", orderRoutes);
-app.use("/api/v1/products", productRoutes);
-
-console.log(" Product routes mounted at /api/v1/products");
-
-app.use((req, res) => {
-    console.log("❌ Route not found:", req.method, req.originalUrl);
-    res.status(404).json({
-        success: false,
-        message: "Route not found",
-        url: req.originalUrl
+    res.status(200).json({ 
+        success: true,
+        message: 'E-commerce Backend is running 🚀'
     });
 });
 
+// Routes
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/products', productRoutes);
 
-app.listen(PORT, () => {
-    ConnectDb()
-    console.log(`Server is running port: ${PORT}`);
+console.log("✅ Product routes mounted at /api/v1/products");
 
-})
+// 404 Handler
+app.use((req, res) => {
+    res.status(404).json({ success: false, message: "Route not found" });
+});
+
+app.listen(PORT, async () => {
+    console.log(`🚀 Server is running on port: ${PORT}`);
+    await ConnectDb();
+});
