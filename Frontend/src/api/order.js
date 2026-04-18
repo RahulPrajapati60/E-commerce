@@ -1,8 +1,8 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL
-  ? `${process.env.REACT_APP_API_URL}/api/v1`
-  : "http://localhost:8000/api/v1";
+const API_BASE_URL = process.env.REACT_APP_API_URL 
+  ? `${process.env.REACT_APP_API_URL}/api/v1` 
+  : "https://e-commerce-backend-szgq.onrender.com/api/v1";
 
 const ORDER_BASE = `${API_BASE_URL}/orders`;
 
