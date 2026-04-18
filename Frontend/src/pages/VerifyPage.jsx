@@ -1,45 +1,50 @@
 import { useEffect, useState } from "react";
 
 const VerifyPage = () => {
-  const [status, setStatus] = useState("Verifying...");
+  const [status, setStatus] = useState("Verifying your email...");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
-    console.log("TOKEN:", token); // ✅ debug
+    console.log("🔑 Extracted Token:", token);
 
     if (!token) {
-      setStatus("❌ No token found");
+      setStatus("❌ No token found in URL");
       return;
     }
 
     const verifyUser = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/v1/users/verify", {
+        // ✅ Production + Development dono ke liye sahi URL
+        const API_URL = process.env.REACT_APP_API_URL 
+          ? `${process.env.REACT_APP_API_URL}/api/v1/users/verify`
+          : "http://localhost:8000/api/v1/users/verify";
+
+        console.log("📡 Calling API:", API_URL);
+
+        const res = await fetch(API_URL, {
           method: "POST",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
 
         const data = await res.json();
-        console.log("VERIFY RESPONSE:", data); 
+        console.log("✅ Verify Response:", data);
 
-        if (data.success) {
-          setStatus("✅ Email verified successfully");
-
-          //  redirect after success
+        if (data.success || res.ok) {
+          setStatus("✅ Email verified successfully! Redirecting to login...");
           setTimeout(() => {
             window.location.href = "/?page=login";
-          }, 2000);
-
+          }, 2500);
         } else {
-          setStatus("❌ " + data.message);
+          setStatus(`❌ ${data.message || "Verification failed"}`);
         }
       } catch (err) {
-        console.error(err);
-        setStatus("❌ Server error");
+        console.error("❌ Verify Error:", err);
+        setStatus("❌ Network error. Please try again.");
       }
     };
 
@@ -47,9 +52,15 @@ const VerifyPage = () => {
   }, []);
 
   return (
-    <h1 style={{ textAlign: "center", marginTop: "100px" }}>
-      {status}
-    </h1>
+    <div style={{ 
+      textAlign: "center", 
+      marginTop: "120px", 
+      fontFamily: "sans-serif" 
+    }}>
+      <h1 style={{ fontSize: "28px", color: "#444" }}>
+        {status}
+      </h1>
+    </div>
   );
 };
 
