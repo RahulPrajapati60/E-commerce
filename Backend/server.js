@@ -14,11 +14,11 @@ app.use(express.json());
 // ✅ Final CORS (Sabhi tere frontend links ke liye)
 app.use(cors({
     origin: [
-        "http://localhost:5173",
-        "http://localhost:5174",
         "https://e-commerce-xi-seven-84.vercel.app",
         "https://e-commerce-git-main-rahul-prajapatis-projects-f953a45a.vercel.app",
-        "https://e-commerce-4fe8q3odd-rahul-prajapatis-projects-f953a45a.vercel.app"
+        "https://e-commerce-4fe8q3odd-rahul-prajapatis-projects-f953a45a.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:5174"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
