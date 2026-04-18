@@ -1,8 +1,8 @@
 // src/api/config.js
 
-const API_BASE_URL = process.env.REACT_APP_API_URL
-  ? `${process.env.REACT_APP_API_URL}/api/v1`
-  : "http://localhost:8000/api/v1";
+const API_BASE_URL = process.env.REACT_APP_API_URL 
+  ? `${process.env.REACT_APP_API_URL}/api/v1` 
+  : "https://e-commerce-backend-szgq.onrender.com/api/v1";
 
 console.log("🚀 API Base URL:", API_BASE_URL);   // Helpful for debugging
 
