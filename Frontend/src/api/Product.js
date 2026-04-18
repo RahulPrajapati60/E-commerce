@@ -1,12 +1,12 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL
-  ? `${process.env.REACT_APP_API_URL}/api/v1`
-  : "http://localhost:8000/api/v1";
+const API_BASE_URL = process.env.REACT_APP_API_URL 
+  ? `${process.env.REACT_APP_API_URL}/api/v1` 
+  : "https://e-commerce-backend-szgq.onrender.com/api/v1";
 
 const PRODUCT_BASE = `${API_BASE_URL}/products`;
 
-console.log("🚀 Product API Base:", PRODUCT_BASE); // For debugging
+console.log("🚀 Product API Base:", PRODUCT_BASE); 
 
 // Create axios instance (Recommended)
 const api = axios.create({
