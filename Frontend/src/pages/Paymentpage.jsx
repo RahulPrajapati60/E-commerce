@@ -619,37 +619,47 @@ const PaymentPage = ({
   coupon = null,
   onClearCart,
 }) => {
-  const { accessToken, isLoggedIn } = useAuth();
+  const { user, accessToken, isLoading } = useAuth();
  useEffect(() => {
-    if (!isLoggedIn || !accessToken) {
+    if (isLoading) return;
+
+    if (!user || !accessToken) {
       onToast("Please login to continue checkout", "error");
       onNavigate("login?redirect=payment");
     }
-  }, [isLoggedIn, accessToken, onNavigate, onToast]);
-
-  if (!isLoggedIn || !accessToken) {
+  }, [user, accessToken, isLoading, onNavigate, onToast]);
+  
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-stone-600">Redirecting to login...</p>
+          <p className="text-stone-600">Checking authentication...</p>
         </div>
       </div>
     );
+  }
+  if (!user || !accessToken) {
+    return null;
   }
 
   const [step, setStep] = useState(0);
   const [paymentInfo, setPaymentInfo] = useState(null);
   const [placedOrder, setPlacedOrder] = useState(null);
-
   const [address, setAddress] = useState({
-    fullName: "", phone: "", pincode: "", address: "",
-    locality: "", city: "", state: "", addressType: "Home",
+    fullName: "", 
+    phone: "", 
+    pincode: "", 
+    address: "",
+    locality: "", 
+    city: "", 
+    state: "", 
+    addressType: "Home",
   });
-
   const calculatedTotal = cart.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 1), 0);
 
-  const updateAddress = (field, value) => setAddress(prev => ({ ...prev, [field]: value }));
+  const updateAddress = (field, value) => 
+    setAddress(prev => ({ ...prev, [field]: value }));
 
   const handleOrderSuccess = (order) => {
     setPlacedOrder(order);
@@ -661,12 +671,14 @@ const PaymentPage = ({
   if (step === 3) {
     return <OrderSuccess onNavigate={onNavigate} order={placedOrder} address={address} />;
   }
-
-  return (
+return (
     <div className="min-h-screen bg-stone-50">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <button onClick={() => step === 0 ? onNavigate("cart") : setStep(s => s - 1)}
-          className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-800 mb-6 transition-colors group">
+        
+        <button 
+          onClick={() => step === 0 ? onNavigate("cart") : setStep(s => s - 1)}
+          className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-800 mb-6 transition-colors group"
+        >
           <svg className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
@@ -679,7 +691,15 @@ const PaymentPage = ({
           <div className="bg-white rounded-3xl border border-stone-100 p-6 sm:p-8">
             {step === 0 && <AddressStep data={address} onChange={updateAddress} onNext={() => setStep(1)} />}
             {step === 1 && <PaymentStep total={calculatedTotal} onNext={(pInfo) => { setPaymentInfo(pInfo); setStep(2); }} onBack={() => setStep(0)} />}
-            {step === 2 && <ConfirmStep address={address} total={calculatedTotal} cart={cart} paymentInfo={paymentInfo} coupon={coupon} onBack={() => setStep(1)} onPlace={handleOrderSuccess} />}
+            {step === 2 && <ConfirmStep 
+              address={address} 
+              total={calculatedTotal} 
+              cart={cart} 
+              paymentInfo={paymentInfo} 
+              coupon={coupon} 
+              onBack={() => setStep(1)} 
+              onPlace={handleOrderSuccess} 
+            />}
           </div>
 
           <div className="lg:sticky lg:top-24">
