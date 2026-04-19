@@ -8,10 +8,10 @@ import cors from 'cors';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-
+// Middleware
 app.use(express.json());
 
-// ✅ Final CORS (Sabhi tere frontend links ke liye)
+// CORS 
 app.use(cors({
     origin: [
         "https://e-commerce-xi-seven-84.vercel.app",
@@ -26,10 +26,6 @@ app.use(cors({
     exposedHeaders: ["Authorization"]  
 }));
 
-app.options('*', cors());
-
-app.set("trust proxy", 1);
-
 // Health Check
 app.get('/', (req, res) => {
     res.status(200).json({ 
@@ -43,11 +39,16 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/products', productRoutes);
 
-console.log("✅ All routes mounted successfully");
+console.log(" All routes mounted successfully");
 
 // 404 Handler
-app.use((req, res) => {
-    res.status(404).json({ success: false, message: "Route not found" });
+app.use("*", (req, res) => {
+    console.log(`❌ Route not found: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({
+        success: false,
+        message: "Route not found",
+        url: req.originalUrl
+    });
 });
 
 app.listen(PORT, async () => {
