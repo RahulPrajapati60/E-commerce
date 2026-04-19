@@ -16,7 +16,7 @@ const reducer = (state, action) => {
         ...state,
         user: action.payload.user,
         accessToken: action.payload.accessToken,
-        refreshToken: action.payload.refreshToken,
+        refreshToken: action.payload.refreshToken || null,
         isLoading: false,
       };
     case "LOGOUT":
@@ -31,6 +31,7 @@ const reducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  // Load from localStorage on initial mount
   useEffect(() => {
     try {
       const stored = localStorage.getItem("auth");
@@ -40,7 +41,8 @@ export const AuthProvider = ({ children }) => {
       } else {
         dispatch({ type: "LOADED" });
       }
-    } catch {
+    } catch (err) {
+      console.error("Auth loading error:", err);
       dispatch({ type: "LOADED" });
     }
   }, []);
@@ -55,8 +57,30 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: "LOGOUT" });
   };
 
+  // Extra safety: Re-check localStorage whenever component mounts
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem("auth");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed.accessToken && !state.accessToken) {
+            dispatch({ type: "LOGIN", payload: parsed });
+          }
+        } catch {}
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [state.accessToken]);
+
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ 
+      ...state, 
+      login, 
+      logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );
