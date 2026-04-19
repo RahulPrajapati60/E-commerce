@@ -177,7 +177,7 @@ const AddressStep = ({ data, onChange, onNext }) => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Full Name" error={errors.fullName} className="sm:col-span-2">
-          <input className={inputCls(errors.fullName)} placeholder="Rahul Sharma" value={data.fullName} onChange={h("fullName")} />
+          <input className={inputCls(errors.fullName)} placeholder="Rahul Prajapati" value={data.fullName} onChange={h("fullName")} />
         </Field>
         <Field label="Mobile Number" error={errors.phone}>
           <div className="relative">
