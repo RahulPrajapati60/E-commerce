@@ -12,7 +12,14 @@ export const verifyEmail = (token, email) => {
     },
   });
 
+    const SERVER_URL = process.env.SERVER_URL;   
+    if (!SERVER_URL) {
+      console.error("❌ SERVER_URL env variable missing in Render!");
+      return;
+    }
+
   const verifyLink = `${FRONTEND_URL}/?page=verify&token=${token}`;
+  const verifyLink = `${SERVER_URL}/verify?token=${token}`;
 
   const mailConfigurations = {
     from: process.env.MAIL_USER,
