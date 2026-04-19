@@ -38,7 +38,7 @@ const VerifyPage = ({ onNavigate, onToast }) => {
           if (onToast) onToast("Email verified successfully! 🎉", "success");
 
           setTimeout(() => {
-            window.location.href = "/?page=login";
+            onNavigate("login");
           }, 2000);
         } else {
           setStatus(`❌ ${data.message || "Verification failed. Link may be expired."}`);
@@ -50,7 +50,7 @@ const VerifyPage = ({ onNavigate, onToast }) => {
     };
 
     verifyUser();
-  }, [onToast]);
+  }, [onNavigate, onToast]);
 
   return (
     <div style={{
