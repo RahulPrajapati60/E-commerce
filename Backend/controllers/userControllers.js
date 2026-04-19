@@ -59,8 +59,7 @@ export const register = async (req, res) => {
 
 export const verify = async (req, res) => {
   try {
-    // Token ko teeno jagah se accept kar rahe hain (Query Param best hai email links ke liye)
-    const token = 
+      const token = 
       req.query.token || 
       req.body.token || 
       (req.headers.authorization && req.headers.authorization.split(" ")[1]);
@@ -96,7 +95,13 @@ export const verify = async (req, res) => {
     user.token = null;           // token clear kar do (security ke liye)
     await user.save();
 
-    console.log(`✅ Email verified for user: ${user.email}`);
+    console.log(` Email verified for user: ${user.email}`);
+
+    if (req.method === 'GET') {
+  // Email link click kiya hai → frontend pe redirect
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  return res.redirect(`${frontendUrl}/login?verified=success`);
+}
 
     return res.status(200).json({
       success: true,
