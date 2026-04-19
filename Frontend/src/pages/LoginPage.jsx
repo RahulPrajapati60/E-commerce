@@ -29,27 +29,37 @@ const LoginPage = ({ onNavigate, onToast }) => {
   };
 
   const handleSubmit = async () => {
-    const errs = validate();
-    if (Object.keys(errs).length > 0) {
-      setFieldErrors(errs);
-      return;
-    }
+  const errs = validate();
+  if (Object.keys(errs).length > 0) {
+    setFieldErrors(errs);
+    return;
+  }
 
-    const result = await call(() => authAPI.login(form));
-    if (result?.success) {
-      login({
-        user: result.user,
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-      });
+  const result = await call(() => authAPI.login(form));
 
-      onToast(`Welcome back, ${result.user.firstName}! 🎉`, "success");
+  if (result?.success) {
+    // ✅ Yeh line important hai - API se jo response aa raha hai uske hisaab se adjust karo
+    login({
+      user: result.user || result.data?.user,           // backend se user kahan aa raha hai
+      accessToken: result.accessToken || result.token || result.data?.token,   // token key check karo
+      refreshToken: result.refreshToken || result.data?.refreshToken,
+    });
 
-      //  Smart Redirect
+    console.log("✅ Login successful - Context updated with:", {
+      user: result.user || result.data?.user,
+      token: result.accessToken || result.token
+    });
+
+    onToast(`Welcome back, ${result.user?.firstName || result.data?.user?.firstName || "User"}! 🎉`, "success");
+
+    // Smart Redirect
+    setTimeout(() => {
       onNavigate(redirectTo);
-    }
-  };
-
+    }, 800);
+  } else {
+    onToast(result?.message || "Login failed", "error");
+  }
+};
   const handleKeyDown = (e) => {
     if (e.key === "Enter") handleSubmit();
   };
