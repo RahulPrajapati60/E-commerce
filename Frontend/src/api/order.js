@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL 
-  ? `${process.env.REACT_APP_API_URL}/api/v1` 
+const API_BASE_URL = process.env.REACT_APP_API_URL
+  ? `${process.env.REACT_APP_API_URL}/api/v1`
   : "https://e-commerce-backend-szgq.onrender.com/api/v1";
 
 const ORDER_BASE = `${API_BASE_URL}/orders`;
@@ -16,52 +16,58 @@ const api = axios.create({
   },
 });
 
-// Auto attach token (Recommended)
+// ✅ Auto attach token from localStorage 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token"); // Change if you use different storage
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  try {
+    const stored = localStorage.getItem("auth");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const token = parsed.accessToken || parsed.token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+  } catch (err) {
+    console.error("Token attach error:", err);
   }
   return config;
 });
 
 export const orderAPI = {
   // User APIs
-  placeOrder: async (body, token) => {
-    const res = await api.post("/place", body, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
+  placeOrder: async (body) => {
+    const res = await api.post("/place", body);
     return res.data;
   },
 
-  getMyOrders: async (token) => {
+  getMyOrders: async () => {
     const res = await api.get("/my-orders");
     return res.data;
   },
 
-  getOrderById: async (orderId, token) => {
+  getOrderById: async (orderId) => {
     const res = await api.get(`/${orderId}`);
     return res.data;
   },
 
-  cancelOrder: async (orderId, token) => {
+  cancelOrder: async (orderId) => {
     const res = await api.patch(`/${orderId}/cancel`);
     return res.data;
   },
 
   // Admin APIs
-  getAllOrders: async (params = "", token) => {
+  getAllOrders: async (params = "") => {
     const query = params ? `?${params}` : "";
     const res = await api.get(`/admin/all${query}`);
     return res.data;
   },
 
-  getStats: async (token) => {
+  getStats: async () => {
     const res = await api.get("/admin/stats");
     return res.data;
   },
 
-  updateOrderStatus: async (orderId, body, token) => {
+  updateOrderStatus: async (orderId, body) => {
     const res = await api.patch(`/admin/${orderId}/status`, body);
     return res.data;
   },
