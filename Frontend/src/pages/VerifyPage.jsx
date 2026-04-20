@@ -1,36 +1,59 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';  
 
-const VerifyPage = ({ onNavigate, onToast }) => {
-  const [status, setStatus] = useState("Verifying your email...");
+const VerifyPage = () => {
+  const [status, setStatus] = useState('verifying'); // 'verifying' | 'success' | 'error'
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const token = searchParams.get('token');
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("verified") === "success") {
-      setStatus("✅ Email verified successfully! Redirecting to login...");
-      if (onToast) onToast("Email verified successfully! 🎉", "success");
-      setTimeout(() => {
-        onNavigate("login");
-      }, 1500);
-    } else {
-      setStatus("❌ Something went wrong. Please try again or request new link.");
+    if (!token) {
+      setStatus('error');
+      return;
     }
-  }, [onNavigate, onToast]);
+
+    const verifyUser = async () => {
+      try {
+        const BACKEND_URL = process.env.REACT_APP_SERVER_URL || "https://e-commerce-backend-szgq.onrender.com";
+        
+        const res = await fetch(`${BACKEND_URL}/api/v1/users/verify?token=${token}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          setStatus('success');
+          setTimeout(() => navigate('/login'), 3000); // redirect after success
+        } else {
+          setStatus('error');
+        }
+      } catch (err) {
+        console.error(err);
+        setStatus('error');
+      }
+    };
+
+    verifyUser();
+  }, [token, navigate]);
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#fafaf9",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "20px",
-      fontFamily: "sans-serif"
-    }}>
-      <div style={{ textAlign: "center", maxWidth: "500px" }}>
-        <h1 style={{ fontSize: "28px", fontWeight: "900", color: "#444", marginBottom: "16px" }}>
-          {status}
-        </h1>
-      </div>
+    <div style={{ textAlign: 'center', padding: '50px', fontFamily: 'sans-serif' }}>
+      {status === 'verifying' && <h2>Verifying your email...</h2>}
+      {status === 'success' && (
+        <>
+          <h2 style={{ color: 'green' }}>✅ Email Verified Successfully!</h2>
+          <p>You can now login to your account.</p>
+        </>
+      )}
+      {status === 'error' && (
+        <>
+          <h2 style={{ color: 'red' }}>❌ Verification Failed</h2>
+          <p>Invalid or expired token. Please request a new verification email.</p>
+        </>
+      )}
     </div>
   );
 };
