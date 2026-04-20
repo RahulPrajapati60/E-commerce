@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import "dotenv/config";
 
 export const verifyEmail = (token, email) => {
-  const BACKEND_URL = process.env.SERVER_URL || "http://localhost:8000" || "https://e-commerce-backend-szgq.onrender.com";
+  const BACKEND_URL = process.env.SERVER_URL || "http://localhost:8000";
   const verificationLink = `${BACKEND_URL}/api/v1/users/verify?token=${token}`;
 
   const transporter = nodemailer.createTransport({
