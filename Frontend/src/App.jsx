@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { useCart } from "./hooks/useCart";
 import Navbar from "./components/Navbar";
@@ -26,7 +26,6 @@ const App = () => {
   const [productId, setProductId] = useState(null);
   const [toast, setToast] = useState(null);
 
-
   const { cart, coupon, setCoupon, addToCart, removeFromCart, updateQty, clearCart } = useCart();
 
   const showToast = useCallback((message, type = "success") => {
@@ -38,6 +37,24 @@ const App = () => {
     if (id !== null) setProductId(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  // ✅ FIX: On app load, check if backend redirected here with ?verified=success or ?verified=error
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const verified = params.get("verified");
+    const message = params.get("message");
+
+    if (verified === "success") {
+      setPage("login");
+      showToast(message || "✅ Email verified! You can now login.", "success");
+      // Clean the URL without reload
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (verified === "error") {
+      setPage("login");
+      showToast(message || "❌ Verification failed. Please request a new link.", "error");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [showToast]);
 
   const handleAddToCart = useCallback((product) => {
     addToCart(product);
