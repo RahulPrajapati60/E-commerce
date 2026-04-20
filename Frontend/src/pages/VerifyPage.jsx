@@ -2,10 +2,10 @@ import nodemailer from "nodemailer";
 import "dotenv/config";
 
 export const verifyEmail = (token, email) => {
-  const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173" || "https://e-commerce-xi-seven-84.vercel.app";
+  const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
   // ←←← YE LINK AB BACKEND KO HIT KAREGA (sabse clean)
-  const verificationLink = `${process.env.SERVER_URL || "http://localhost:8000"}/api/v1/users/verify?token=${token}` || "https://e-commerce-backend-szgq.onrender.com";
+  const verificationLink = `${process.env.SERVER_URL || "http://localhost:8000"}/api/v1/users/verify?token=${token}`;
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
