@@ -57,78 +57,66 @@ export const register = async (req, res) => {
   }
 };
 
-export const verify = async (req, res) => {
-  try {
-      const token = 
-      req.query.token || 
-      req.body.token || 
-      (req.headers.authorization && req.headers.authorization.split(" ")[1]);
-    
-    if (!token) {
-        return res.status(400).json({
-            success: false,
-            message: "Verification token is missing. Please use the link from email."
-          });
-        }
-    // JWT verify karo
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+// Only the verify controller is changed. Replace the existing export const verify in userControllers.js
 
-    // User find karo
+export const verify = async (req, res) => {
+  // ✅ FIX: Helper to redirect or JSON respond based on request method
+  const isGet = req.method === 'GET';
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://e-commerce-xi-seven-84.vercel.app';
+
+  const redirectOrJson = (success, message, statusCode = 400) => {
+    if (isGet) {
+      // Always redirect to frontend — success or failure
+      const status = success ? 'success' : 'error';
+      return res.redirect(`${FRONTEND_URL}/login?verified=${status}&message=${encodeURIComponent(message)}`);
+    }
+    return res.status(success ? 200 : statusCode).json({ success, message });
+  };
+
+  try {
+    const token =
+      req.query.token ||
+      req.body.token ||
+      (req.headers.authorization && req.headers.authorization.split(" ")[1]);
+
+    if (!token) {
+      return redirectOrJson(false, "Verification token is missing. Please use the link from email.");
+    }
+
+    // Verify JWT
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.SECRET_KEY);
+    } catch (error) {
+      if (error.name === "TokenExpiredError") {
+        return redirectOrJson(false, "Verification link has expired. Please request a new verification email.");
+      }
+      return redirectOrJson(false, "Invalid verification link");
+    }
+
+    // Find user
     const user = await User.findById(decoded.id);
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
+      return redirectOrJson(false, "User not found", 404);
     }
 
-    // Agar pehle se verified hai
+    // Already verified
     if (user.isVerified) {
-      return res.status(200).json({
-        success: true,
-        message: "Email is already verified"
-      });
+      return redirectOrJson(true, "Email is already verified");
     }
 
-    // User ko verified mark karo
+    // Mark as verified
     user.isVerified = true;
-    user.token = null;           // token clear kar do (security ke liye)
+    user.token = null; // clear token for security
     await user.save();
 
-    console.log(` Email verified for user: ${user.email}`);
+    console.log(`✅ Email verified for user: ${user.email}`);
 
-    if (req.method === 'GET') {
-  // Email link click kiya hai → frontend pe redirect
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-  return res.redirect(`${frontendUrl}/login?verified=success`);
-}
-
-    return res.status(200).json({
-      success: true,
-      message: "Email verified successfully. You can now login."
-    });
+    return redirectOrJson(true, "Email verified successfully. You can now login.");
 
   } catch (error) {
     console.error("Verify Controller Error:", error);
-
-    if (error.name === "TokenExpiredError") {
-      return res.status(400).json({
-        success: false,
-        message: "Verification link has expired. Please request a new verification email."
-      });
-    }
-
-    if (error.name === "JsonWebTokenError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid verification link"
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong during verification"
-    });
+    return redirectOrJson(false, "Something went wrong during verification");
   }
 };
    
