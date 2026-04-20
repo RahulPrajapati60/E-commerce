@@ -2,10 +2,9 @@ import nodemailer from "nodemailer";
 import "dotenv/config";
 
 export const verifyEmail = (token, email) => {
-  const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+  const BACKEND_URL = process.env.SERVER_URL || "http://localhost:8000";
 
-  // ←←← YE LINK AB BACKEND KO HIT KAREGA (sabse clean)
-  const verificationLink = `${process.env.SERVER_URL || "http://localhost:8000"}/api/v1/users/verify?token=${token}`;
+  const verificationLink = `${BACKEND_URL}/api/v1/users/verify?token=${token}`;
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -41,9 +40,10 @@ export const verifyEmail = (token, email) => {
 
   transporter.sendMail(mailConfigurations, (error, info) => {
     if (error) {
-      console.error("Email send error:", error);
+      console.error("❌ Email send error:", error);
       throw new Error(error);
     }
-    console.log("Verification email sent:", info.messageId);
+    console.log("✅ Verification email sent to", email);
+    console.log("🔗 Link:", verificationLink);
   });
 };
