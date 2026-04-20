@@ -3,13 +3,15 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const verifyEmail = async (token, email) => {
-  const FRONTEND_URL = process.env.FRONTEND_URL || "https://e-commerce-xi-seven-84.vercel.app";
+  // ✅ FIX: Link points to BACKEND /api/v1/users/verify (GET request)
+  // Backend will verify the token and then redirect to frontend /login?verified=success
+  const BACKEND_URL = process.env.BACKEND_URL || "https://e-commerce-backend-szgq.onrender.com";
   
-  const verificationLink = `${FRONTEND_URL}/verify?token=${token}`;
+  const verificationLink = `${BACKEND_URL}/api/v1/users/verify?token=${token}`;
 
   try {
     await resend.emails.send({
-      from: "Utsav.in <onboarding@resend.dev>",   // testing ke liye yeh use karo, baad mein apna domain add kar lena
+      from: "Utsav.in <onboarding@resend.dev>",
       to: email,
       subject: "Verify Your Email — Utsav.in",
       html: `
