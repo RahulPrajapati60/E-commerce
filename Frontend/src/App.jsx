@@ -56,6 +56,17 @@ const App = () => {
     }
   }, [showToast]);
 
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const pageParam = params.get("page");
+
+  // Agar URL mein ?page=verify hai, toh state ko 'verify' par set karein
+  if (pageParam) {
+    setPage(pageParam);
+  }
+}, []); // Yeh sirf ek baar chalega jab app load hogi
+
+
   const handleAddToCart = useCallback((product) => {
     addToCart(product);
     showToast(`${product.name} added to cart`, "success");
