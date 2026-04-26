@@ -42,7 +42,7 @@ app.use('/api/v1/products', productRoutes);
 console.log(" All routes mounted successfully");
 
 // 404 Handler
-app.use("*", (req, res) => {
+app.all("/*", (req, res) => {
     console.log(`❌ Route not found: ${req.method} ${req.originalUrl}`);
     res.status(404).json({
         success: false,
